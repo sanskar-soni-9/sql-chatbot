@@ -12,24 +12,10 @@ export class UserService {
     });
   }
 
-  async createUser({
-    firstName,
-    lastName,
-    userName,
-    email,
-    password,
-    hashSalt,
-  }: CreateUserDto) {
+  async createUser(user: CreateUserDto) {
     try {
       return await this.prisma.user.create({
-        data: {
-          firstName,
-          lastName,
-          userName,
-          email,
-          password,
-          hashSalt,
-        },
+        data: { ...user },
       });
     } catch (err) {
       console.error(err);

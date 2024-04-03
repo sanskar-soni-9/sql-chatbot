@@ -4,27 +4,28 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 import { BcryptService } from 'src/modules/bcrypt/bcrypt.service';
-import { UserDto } from '../user/dto/user.dto';
-import { UserService } from '../user/user.service';
+import { UsersService } from '../users/users.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import RequestUserInterface from './interfaces/request-user.interface';
+import { UserDto } from '../users/dto/user.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
+    private readonly userService: UsersService,
     private readonly bcryptService: BcryptService,
     private readonly jwtService: JwtService,
   ) {}
 
-  private async hashPassword(password: string, salt?: string) {
-    const hashSalt = salt || (await this.bcryptService.generateSalt());
+  private async hashPassword(password: string, salt?: string): Promise<string> {
     const hashedPass = await this.bcryptService.generateHash(
       password,
-      hashSalt,
+      salt || (await this.bcryptService.generateSalt()),
     );
-    return { hashSalt, hashedPass };
+    return hashedPass;
   }
 
   private async validatePassword(
@@ -34,7 +35,7 @@ export class AuthService {
     return await this.bcryptService.validateHash(password, hashedPass);
   }
 
-  async validateUser({ login, password }: LoginUserDto) {
+  async validateUser({ login, password }: LoginUserDto): Promise<UserDto> {
     const user = await this.userService.findUserByLogin(login);
     if (!user) throw new UnauthorizedException('User does not exist.');
 
@@ -44,7 +45,7 @@ export class AuthService {
     return user;
   }
 
-  async registerUesr(userDetails: RegisterUserDto): Promise<UserDto> {
+  async createNewUser(userDetails: RegisterUserDto): Promise<UserDto> {
     try {
       const emailExists = await this.userService.findUserByLogin(
         userDetails.email,
@@ -62,21 +63,51 @@ export class AuthService {
       if (usernameExists)
         throw new ConflictException('Username already exists.');
 
-      const { hashedPass, hashSalt } = await this.hashPassword(
-        userDetails.password,
-      );
+      const hashedPass = await this.hashPassword(userDetails.password);
 
       return await this.userService.createUser({
         ...userDetails,
         password: hashedPass,
-        hashSalt,
       });
     } catch (err) {
       throw err;
     }
   }
 
-  getLoginToken(username: string, userId: string): string {
-    return this.jwtService.sign({ username, sub: userId });
+  async getLoginToken(username: string, userId: string): Promise<string> {
+    return await this.jwtService.signAsync({ username, sub: userId });
+  }
+
+  async handleRegister(body: RegisterUserDto, res: Response) {
+    try {
+      const user = await this.createNewUser(body);
+      const token = await this.getLoginToken(user.userName, user.id);
+      res.cookie('token', token, { httpOnly: true });
+      return {
+        isError: false,
+        status: 'success',
+        message: 'User registered successfully.',
+      };
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async handleLogin(req: RequestUserInterface, res: Response) {
+    try {
+      const { user } = req;
+      if (!user) throw new UnauthorizedException('User Authentication Failed.');
+      const token = await this.getLoginToken(user.userName, user.id);
+      res.cookie('token', token, { httpOnly: true });
+      return {
+        isError: false,
+        status: 'success',
+        message: 'User Logged in successfully.',
+      };
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 }

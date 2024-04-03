@@ -24,8 +24,4 @@ export class UserDto {
   @IsNotEmpty()
   @IsString()
   readonly password: string;
-
-  @IsNotEmpty()
-  @IsString()
-  readonly hashSalt: string;
 }

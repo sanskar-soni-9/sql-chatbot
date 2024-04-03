@@ -3,18 +3,18 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUserByLogin(login: string) {
-    return await this.prisma.user.findFirst({
-      where: { OR: [{ userName: login }, { email: login }] },
+    return await this.prisma.users.findFirst({
+      where: { OR: [{ email: login }, { userName: login }] },
     });
   }
 
   async createUser(user: CreateUserDto) {
     try {
-      return await this.prisma.user.create({
+      return await this.prisma.users.create({
         data: { ...user },
       });
     } catch (err) {

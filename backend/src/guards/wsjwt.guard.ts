@@ -12,19 +12,19 @@ export class WsJwtGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
   async canActivate(context: ExecutionContext) {
-    const client = context.switchToWs().getClient<Socket>();
-    const { authorization } = client.handshake.headers;
-    if (!authorization) throw new UnauthorizedException();
-
     try {
+      const client = context.switchToWs().getClient<Socket>();
+      const { authorization } = client.handshake.headers;
+      if (!authorization) throw new UnauthorizedException();
+
       const verify = await this.authService.verifyToken(
         authorization.split(' ')[1],
       );
       if (verify) return true;
     } catch (err) {
       console.error(err);
-      throw err;
     }
+
     return false;
   }
 }

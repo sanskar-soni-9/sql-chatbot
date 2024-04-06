@@ -83,6 +83,10 @@ export class AuthService {
     return await this.jwtService.verifyAsync<JwtAuthPayload>(token);
   }
 
+  setJwtAuthHeader(res: Response, token: string) {
+    res.setHeader('Authorization', `Bearer ${token}`);
+  }
+
   async handleRegister(body: RegisterUserDto, res: Response) {
     try {
       const user = await this.createNewUser(body);
@@ -90,7 +94,7 @@ export class AuthService {
         userName: user.userName,
         userId: user.id,
       });
-      res.cookie('token', token, { httpOnly: true });
+      this.setJwtAuthHeader(res, token);
       return {
         isError: false,
         status: 'success',
@@ -110,7 +114,7 @@ export class AuthService {
         userName: user.userName,
         userId: user.id,
       });
-      res.cookie('token', token, { httpOnly: true });
+      this.setJwtAuthHeader(res, token);
       return {
         isError: false,
         status: 'success',

@@ -17,7 +17,9 @@ export class WsJwtGuard implements CanActivate {
     if (!authorization) throw new UnauthorizedException();
 
     try {
-      const verify = await this.authService.verifyToken(authorization);
+      const verify = await this.authService.verifyToken(
+        authorization.split(' ')[1],
+      );
       if (verify) return true;
     } catch (err) {
       console.error(err);

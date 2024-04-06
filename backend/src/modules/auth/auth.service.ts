@@ -11,6 +11,7 @@ import { UsersService } from '../users/users.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import RequestUserInterface from './interfaces/request-user.interface';
+import { JwtAuthPayload } from 'src/interfaces/jwt.interface';
 
 @Injectable()
 export class AuthService {
@@ -74,14 +75,21 @@ export class AuthService {
     }
   }
 
-  async getLoginToken(username: string, userId: string): Promise<string> {
-    return await this.jwtService.signAsync({ username, sub: userId });
+  async getLoginToken(user: JwtAuthPayload): Promise<string> {
+    return await this.jwtService.signAsync(user);
+  }
+
+  async verifyToken(token: string): Promise<JwtAuthPayload> {
+    return await this.jwtService.verifyAsync<JwtAuthPayload>(token);
   }
 
   async handleRegister(body: RegisterUserDto, res: Response) {
     try {
       const user = await this.createNewUser(body);
-      const token = await this.getLoginToken(user.userName, user.id);
+      const token = await this.getLoginToken({
+        userName: user.userName,
+        userId: user.id,
+      });
       res.cookie('token', token, { httpOnly: true });
       return {
         isError: false,
@@ -98,7 +106,10 @@ export class AuthService {
     try {
       const { user } = req;
       if (!user) throw new UnauthorizedException('User Authentication Failed.');
-      const token = await this.getLoginToken(user.userName, user.id);
+      const token = await this.getLoginToken({
+        userName: user.userName,
+        userId: user.id,
+      });
       res.cookie('token', token, { httpOnly: true });
       return {
         isError: false,

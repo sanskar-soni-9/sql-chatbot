@@ -14,7 +14,7 @@ import { BotWsRequestInterface } from './interfaces/getQueryRequest.interface';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: process.env.NODE_ENV === 'dev' ? '*' : process.env.FRONT_BASE_URL,
   },
 })
 export class BotGateway {

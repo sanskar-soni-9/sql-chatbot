@@ -5,7 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Socket } from 'socket.io';
+import { JwtAuthPayload } from 'src/interfaces/jwt.interface';
 import { AuthService } from 'src/modules/auth/auth.service';
+
+interface ClientInterface extends Socket {
+  user: JwtAuthPayload;
+}
 
 @Injectable()
 export class WsJwtGuard implements CanActivate {
@@ -13,14 +18,14 @@ export class WsJwtGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     try {
-      const client = context.switchToWs().getClient<Socket>();
+      const client = context.switchToWs().getClient<ClientInterface>();
       const { authorization } = client.handshake.headers;
       if (!authorization) throw new UnauthorizedException();
 
-      const verify = await this.authService.verifyToken(
+      client.user = await this.authService.verifyToken(
         authorization.split(' ')[1],
       );
-      if (verify) return true;
+      if (client.user) return true;
     } catch (err) {
       console.error(err);
     }

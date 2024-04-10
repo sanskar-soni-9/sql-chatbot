@@ -60,11 +60,12 @@ export class BotService {
       return { chatId, res: result, isError: false };
     } catch (err) {
       console.log(err);
-      this.messagesService.addMessages({
-        chatId,
-        question: body.msg,
-        response: 'Error generating query.',
-      });
+      if (body.msg)
+        this.messagesService.addMessages({
+          chatId,
+          question: body.msg,
+          response: 'Error generating query.',
+        });
 
       return { isError: true, chatId, res: 'Error generating query.' };
     }

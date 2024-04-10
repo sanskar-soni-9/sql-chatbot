@@ -13,6 +13,7 @@ const config: Config = {
       secondary: colors.neutral[800],
       action: colors.blue[500],
       light: colors.neutral[50],
+      border: colors.neutral[800],
     },
   },
   plugins: [],

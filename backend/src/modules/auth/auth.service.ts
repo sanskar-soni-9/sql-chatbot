@@ -4,7 +4,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
 import { BcryptService } from '../external/bcrypt/bcrypt.service';
 import { UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
@@ -83,22 +82,18 @@ export class AuthService {
     return await this.jwtService.verifyAsync<JwtAuthPayload>(token);
   }
 
-  setJwtAuthHeader(res: Response, token: string) {
-    res.setHeader('Authorization', `Bearer ${token}`);
-  }
-
-  async handleRegister(body: RegisterUserDto, res: Response) {
+  async handleRegister(body: RegisterUserDto) {
     try {
       const user = await this.createNewUser(body);
       const token = await this.getLoginToken({
         userName: user.userName,
         userId: user.id,
       });
-      this.setJwtAuthHeader(res, token);
       return {
         isError: false,
         status: 'success',
         message: 'User registered successfully.',
+        body: { token },
       };
     } catch (err) {
       console.error(err);
@@ -106,7 +101,7 @@ export class AuthService {
     }
   }
 
-  async handleLogin(req: RequestUserInterface, res: Response) {
+  async handleLogin(req: RequestUserInterface) {
     try {
       const { user } = req;
       if (!user) throw new UnauthorizedException('User Authentication Failed.');
@@ -114,11 +109,11 @@ export class AuthService {
         userName: user.userName,
         userId: user.id,
       });
-      this.setJwtAuthHeader(res, token);
       return {
         isError: false,
         status: 'success',
         message: 'User Logged in successfully.',
+        body: { token },
       };
     } catch (err) {
       console.error(err);

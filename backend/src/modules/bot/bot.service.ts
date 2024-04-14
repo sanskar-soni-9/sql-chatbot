@@ -24,10 +24,10 @@ export class BotService {
         +body.pageNo,
         body.pageSize ? +body.pageSize : undefined,
       );
-      return { isError: false, chatId, res };
+      return { isError: false, chatId, data: res, msg: 'success' };
     } catch (err) {
       console.error(err);
-      return { isEror: true, chatId, res: 'Error getting messages.' };
+      return { isEror: true, chatId, msg: 'Error getting messages.' };
     }
   }
 
@@ -36,10 +36,10 @@ export class BotService {
     try {
       if (!user) throw new UnauthorizedException();
       const res = await this.chatsService.getUserChats(user.userId);
-      return { isError: false, data: res };
+      return { isError: false, data: res, msg: 'success' };
     } catch (err) {
       console.error(err);
-      return { isError: true, msg: 'error getting chats.', data: {} };
+      return { isError: true, msg: 'error getting chats.' };
     }
   }
 
@@ -69,7 +69,7 @@ export class BotService {
         response: result,
       });
 
-      return { chatId, res: result, isError: false };
+      return { chatId, data: result, isError: false, msg: 'success' };
     } catch (err) {
       console.log(err);
       if (body.msg)
@@ -79,7 +79,7 @@ export class BotService {
           response: 'Error generating query.',
         });
 
-      return { isError: true, chatId, res: 'Error generating query.' };
+      return { isError: true, chatId, msg: 'Error generating query.' };
     }
   }
 }

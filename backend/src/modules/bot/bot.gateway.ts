@@ -33,6 +33,12 @@ export class BotGateway {
   }
 
   @UseGuards(WsJwtGuard)
+  @SubscribeMessage('getChats')
+  async handleGetChats(@Req() req: BotWsRequestInterface) {
+    return await this.botService.handleGetChats(req);
+  }
+
+  @UseGuards(WsJwtGuard)
   @SubscribeMessage('getQuery')
   async handleQuery(
     @Req() req: BotWsRequestInterface,

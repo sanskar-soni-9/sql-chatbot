@@ -31,6 +31,18 @@ export class BotService {
     }
   }
 
+  async handleGetChats(req: BotWsRequestInterface) {
+    const { user } = req;
+    try {
+      if (!user) throw new UnauthorizedException();
+      const res = await this.chatsService.getUserChats(user.userId);
+      return { isError: false, data: res };
+    } catch (err) {
+      console.error(err);
+      return { isError: true, msg: 'error getting chats.', data: {} };
+    }
+  }
+
   async handleGetQuery(req: BotWsRequestInterface, body: GetQueryDto) {
     const { user } = req;
 

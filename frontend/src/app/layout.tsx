@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import ContextWrapper from "./contextWrapper";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,7 +20,7 @@ export default function RootLayout({
       <body
         className={`${inter.className} flex flex-col h-dvh bg-primary text-light`}
       >
-        {children}
+        <ContextWrapper>{children}</ContextWrapper>
       </body>
     </html>
   );

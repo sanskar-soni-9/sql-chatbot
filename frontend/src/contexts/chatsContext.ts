@@ -1,21 +1,21 @@
 import { createContext } from "react";
 
+export interface messageInterface {
+  owner: "user" | "model";
+  message: string;
+}
+
 export interface structChat {
   id: string;
-  messages:
-    | {
-        owner: "user" | "model";
-        message: string;
-      }[]
-    | null;
+  messages: messageInterface[];
 }
 
 interface chatsContextValue {
-  chats: structChat[] | null;
+  chats: structChat[];
   updateChats: (chats: structChat[]) => void;
 }
 
-const value = { chats: null, updateChats: () => {} };
+const value = { chats: [], updateChats: () => {} };
 const ChatsContext = createContext<chatsContextValue>(value);
 
 export default ChatsContext;

@@ -17,6 +17,7 @@ export class MessagesService {
       take: pageSize,
       skip: (pageNo - 1) * pageSize,
       select: { question: true, response: true },
+      orderBy: { timestamp: 'desc' },
     });
   }
 

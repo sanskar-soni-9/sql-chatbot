@@ -2,6 +2,7 @@ import axios from "axios";
 import { getCookie, setCookie, hasCookie } from "cookies-next";
 import { Socket } from "socket.io-client";
 import { getSocket } from "./socketio-utils";
+import { structChat } from "@/contexts/chatsContext";
 
 const BACKEND_URL = "http://localhost:3000";
 let socket: Socket;
@@ -11,6 +12,15 @@ const setAuthToken = (token: string) => {
   const authToken = `Bearer ${token}`;
   setCookie("authToken", authToken);
   axios.defaults.headers.common.Authorization = authToken;
+};
+
+const checkAndUpdateSocket = () => {
+  if (!hasCookie("authToken")) return false;
+  if (!socket) {
+    if (!token) token = getCookie("authToken") || "";
+    socket = getSocket(BACKEND_URL, token);
+  }
+  return true;
 };
 
 interface RegisterUserArgs {
@@ -66,23 +76,30 @@ interface GetQueryDto {
 }
 
 const getQuery = async (body: GetQueryDto) => {
-  if (!hasCookie("authToken")) return false;
-  if (!token) token = getCookie("authToken");
-  if (!socket) {
-    socket = getSocket(BACKEND_URL, token!);
-  }
-
-  return await socket.emitWithAck("getQuery", body);
+  if (checkAndUpdateSocket()) return await socket.emitWithAck("getQuery", body);
 };
 
-const getChat = async (chatId: string, pageNo = 1, pageSize = 25) => {
-  if (!hasCookie("authToken") || !chatId) return false;
-  if (!token) token = getCookie("authToken");
-  if (!socket) {
-    socket = getSocket(BACKEND_URL, token!);
-  }
-
-  return await socket.emitWithAck("getChat", { chatId, pageNo, pageSize });
+const getChat = async (
+  chatId: string,
+  pageNo = 1,
+  pageSize = 25,
+): Promise<
+  | {
+      isError: boolean;
+      data: { question: string; response: string }[];
+      chatId: string;
+      msg: string;
+    }
+  | undefined
+> => {
+  if (checkAndUpdateSocket())
+    return await socket.emitWithAck("getChat", { chatId, pageNo, pageSize });
 };
 
-export { loginUser, registerUser, getQuery, getChat };
+const getChats = async (): Promise<
+  { isError: boolean; data: structChat[] } | undefined
+> => {
+  if (checkAndUpdateSocket()) return await socket.emitWithAck("getChats");
+};
+
+export { loginUser, registerUser, getQuery, getChat, getChats };

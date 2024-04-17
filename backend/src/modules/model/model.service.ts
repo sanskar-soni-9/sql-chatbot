@@ -1,4 +1,9 @@
-import { Content, GenerativeModel } from '@google/generative-ai';
+import {
+  Content,
+  GenerativeModel,
+  HarmBlockThreshold,
+  HarmCategory,
+} from '@google/generative-ai';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -20,10 +25,16 @@ export class ModelService {
         ...this.configService.getOrThrow('modelConfig.magicPrompt'),
         ...history,
       ],
+      safetySettings: [
+        {
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+      ],
     });
     const { response } = await client.sendMessage(question);
 
-    if (response.candidates?.length)
+    if (response.candidates && response.candidates[0].content)
       return response.candidates[0].content.parts[0].text;
 
     throw new Error('Error generating SQL query.');

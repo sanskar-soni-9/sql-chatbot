@@ -7,6 +7,7 @@ export interface messageInterface {
 
 export interface structChat {
   id: string;
+  title: string;
   messages: messageInterface[];
 }
 

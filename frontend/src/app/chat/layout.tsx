@@ -26,7 +26,11 @@ const ChatPage = () => {
   const getAndSetChatsMetadata = useCallback(async () => {
     const res = await getChats();
     if (!res) return;
-    const resChats = res.data.map(({ id }) => ({ id, messages: [] }));
+    const resChats = res.data.map(({ id, title }) => ({
+      id,
+      title,
+      messages: [],
+    }));
     updateChats([...resChats]);
   }, [updateChats]);
 
@@ -59,7 +63,7 @@ const ChatPage = () => {
       const chatIndex = chats.findIndex(({ id }) => id === chatId);
       if (chatIndex === -1 && typeof chatId === "string") {
         const updatedChats = [...chats];
-        updatedChats.push({ id: chatId, messages: [] });
+        updatedChats.push({ id: chatId, title: "Chat", messages: [] });
         updateChats([...updatedChats]);
         getAndSetChatHistory();
       } else if (chatIndex > -1 && !chats[chatIndex].messages.length)

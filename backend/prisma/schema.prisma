@@ -22,6 +22,7 @@ model Chats {
   id        String     @id @default(uuid()) @db.Uuid
   timestamp DateTime   @unique @default(now()) @db.Timestamp()
   userId    String     @db.Uuid
+  title     String     @default("Chat")
   user      Users      @relation(fields: [userId], references: [id])
   Messages  Messages[]
 }

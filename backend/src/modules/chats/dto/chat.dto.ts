@@ -8,4 +8,8 @@ export class ChatDto {
   @IsNotEmpty()
   @IsString()
   readonly userId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly title: string;
 }

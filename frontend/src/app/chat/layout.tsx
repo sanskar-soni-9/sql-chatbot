@@ -11,12 +11,14 @@ import {
   useRef,
   useState,
 } from "react";
+import ChatSideBar from "./_components/chatSidebar";
 
 const ChatPage = () => {
   const router = useRouter();
 
   const [question, setQuestion] = useState("");
   const [chatIndex, setChatIndex] = useState(-1);
+  const [messages, setMessages] = useState<messageInterface[]>([]);
   const { chats, updateChats } = useContext(ChatsContext);
 
   const { chatId } = useParams();
@@ -50,17 +52,17 @@ const ChatPage = () => {
       setChatIndex(chatIndex);
 
       updatedChats[chatIndex].messages = messages;
-      updateChats(updatedChats);
+      updateChats([...updatedChats]);
+      setMessages([...updatedChats[chatIndex].messages]);
     }
   }, [chatId, chats, updateChats]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView();
-
     if (!chats.length) {
       getAndSetChatsMetadata();
     } else {
       const chatIndex = chats.findIndex(({ id }) => id === chatId);
+
       if (chatIndex === -1 && typeof chatId === "string") {
         const updatedChats = [...chats];
         updatedChats.push({ id: chatId, title: "Chat", messages: [] });
@@ -68,6 +70,9 @@ const ChatPage = () => {
         getAndSetChatHistory();
       } else if (chatIndex > -1 && !chats[chatIndex].messages.length)
         getAndSetChatHistory();
+
+      setMessages(chatIndex === -1 ? [] : [...chats[chatIndex].messages]);
+      setChatIndex(chatIndex);
     }
   }, [
     chatId,
@@ -76,6 +81,10 @@ const ChatPage = () => {
     getAndSetChatHistory,
     updateChats,
   ]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView();
+  }, [messages]);
 
   const handleTextSubmit = useCallback(async () => {
     if (!chats) return;
@@ -112,27 +121,23 @@ const ChatPage = () => {
   );
 
   return (
-    <div className="w-full h-full text-sm">
+    <div className="w-full h-full text-sm flex">
+      <ChatSideBar chats={chats} />
       <main className="container mx-auto h-full flex flex-col items-center gap-4 bg-secondary/50">
         <div className="w-8/12 h-full pt-10 overflow-y-scroll no-scrollbar text-xs">
-          {chats && chats[chatIndex]
-            ? chats[chatIndex].messages.map(({ owner, message }, index) => (
-                <div
-                  key={index}
-                  className="shrink-0 flex items-start gap-4 mb-6"
-                >
-                  <div className="shrink-0 p-2 rounded-full bg-action">
-                    <Image
-                      src={`/icons/${owner}-icon.svg`}
-                      alt={`${owner} icon`}
-                      width={14}
-                      height={14}
-                    />
-                  </div>
-                  <p className="p-1">{message}</p>
-                </div>
-              ))
-            : ""}
+          {messages.map(({ owner, message }, index) => (
+            <div key={index} className="shrink-0 flex items-start gap-4 mb-6">
+              <div className="shrink-0 p-2 rounded-full bg-action">
+                <Image
+                  src={`/icons/${owner}-icon.svg`}
+                  alt={`${owner} icon`}
+                  width={14}
+                  height={14}
+                />
+              </div>
+              <p className="p-1">{message}</p>
+            </div>
+          ))}
           <div ref={bottomRef} />
         </div>
         <div className="flex items-center ps-4 pe-3 py-2 bg-transparent resize-none rounded-xl border-2 border-border mb-8 h-12 w-9/12 text-sm">

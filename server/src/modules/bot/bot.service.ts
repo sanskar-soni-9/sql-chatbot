@@ -5,6 +5,7 @@ import { ModelService } from '../model/model.service';
 import { GetQueryDto } from './dto/getQuery.dto';
 import { BotWsRequestInterface } from './interfaces/getQueryRequest.interface';
 import { GetChatDto } from './dto/getChat.dto';
+import { UpdateTitleDto } from './dto/updateTitle.dto';
 
 @Injectable()
 export class BotService {
@@ -81,5 +82,11 @@ export class BotService {
 
       return { isError: true, chatId, msg: 'Error generating query.' };
     }
+  }
+
+  async handleUpdateTitle(body: UpdateTitleDto) {
+    const { chatId, title } = body;
+    await this.chatsService.updateTitle(chatId, title);
+    return { isError: false, msg: 'success' };
   }
 }

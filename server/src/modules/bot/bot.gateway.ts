@@ -10,6 +10,7 @@ import { WsJwtGuard } from 'src/guards/wsjwt.guard';
 import { BotService } from './bot.service';
 import { GetChatDto } from './dto/getChat.dto';
 import { GetQueryDto } from './dto/getQuery.dto';
+import { UpdateTitleDto } from './dto/updateTitle.dto';
 import { BotWsRequestInterface } from './interfaces/getQueryRequest.interface';
 
 @WebSocketGateway({
@@ -45,5 +46,11 @@ export class BotGateway {
     @MessageBody() body: GetQueryDto,
   ) {
     return await this.botService.handleGetQuery(req, body);
+  }
+
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('updateTitle')
+  async handleUpdateTitle(@MessageBody() body: UpdateTitleDto) {
+    return await this.botService.handleUpdateTitle(body);
   }
 }

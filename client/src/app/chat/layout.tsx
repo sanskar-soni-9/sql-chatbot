@@ -1,6 +1,11 @@
 "use client";
 import ChatsContext, { messageInterface } from "@/contexts/chatsContext";
-import { getChat, getChats, getQuery } from "@/utils/backend-utils";
+import {
+  getChat,
+  getChats,
+  getQuery,
+  updateTitle,
+} from "@/utils/backend-utils";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -24,6 +29,8 @@ const ChatPage = () => {
   const { chatId } = useParams();
 
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const titleChangedRef = useRef(false);
 
   const getAndSetChatsMetadata = useCallback(async () => {
     const res = await getChats();
@@ -120,11 +127,40 @@ const ChatPage = () => {
     [handleTextSubmit],
   );
 
+  const handleTitleChange = useCallback(
+    async (newTitle: string) => {
+      const updatedChats = [...chats];
+      updatedChats[chatIndex].title = newTitle;
+      updateChats(updatedChats);
+      titleChangedRef.current = true;
+    },
+    [chatIndex, chats, updateChats],
+  );
+
+  const updateChatTitle = useCallback(async () => {
+    if (typeof chatId === "string")
+      await updateTitle(chatId, chats[chatIndex].title);
+  }, [chatId, chatIndex, chats]);
+
   return (
     <div className="w-full h-full text-sm flex">
       <ChatSideBar chats={chats} />
-      <main className="container mx-auto h-full flex flex-col items-center gap-4 bg-secondary/50">
-        <div className="w-8/12 h-full pt-10 overflow-y-scroll no-scrollbar text-xs">
+      <main className="container mx-auto pt-3 h-full flex flex-col items-center gap-4 bg-secondary/50">
+        {chats.length && chatIndex > -1 ? (
+          <div className="self-start ml-5">
+            <input
+              type="text"
+              value={chats[chatIndex].title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              onBlur={() => updateChatTitle()}
+              onKeyDown={(e) => (e.key === "Enter" ? updateChatTitle() : "")}
+              className="border-border ring-offset-primary placeholder:text-muted-foreground focus:none flex h-10 w-full text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md border bg-primary px-4 py-2"
+            />
+          </div>
+        ) : (
+          ""
+        )}
+        <div className="w-8/12 h-full pt-5 overflow-y-scroll no-scrollbar text-xs">
           {messages.map(({ owner, message }, index) => (
             <div key={index} className="shrink-0 flex items-start gap-4 mb-6">
               <div className="shrink-0 p-2 rounded-full bg-action">

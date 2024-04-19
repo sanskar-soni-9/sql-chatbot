@@ -102,4 +102,8 @@ const getChats = async (): Promise<
   if (checkAndUpdateSocket()) return await socket.emitWithAck("getChats");
 };
 
-export { loginUser, registerUser, getQuery, getChat, getChats };
+const updateTitle = async (chatId: string, title: string) => {
+  await socket.emitWithAck("updateTitle", { chatId, title });
+};
+
+export { loginUser, registerUser, getQuery, getChat, getChats, updateTitle };

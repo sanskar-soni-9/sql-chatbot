@@ -4,7 +4,7 @@ import { Socket } from "socket.io-client";
 import { getSocket } from "./socketio-utils";
 import { structChat } from "@/contexts/chatsContext";
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "https://sql-chatbot.onrender.com";
 let socket: Socket;
 let token = getCookie("authToken");
 

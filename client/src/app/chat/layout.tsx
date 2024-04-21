@@ -24,6 +24,7 @@ const ChatPage = () => {
   const [question, setQuestion] = useState("");
   const [chatIndex, setChatIndex] = useState(-1);
   const [messages, setMessages] = useState<messageInterface[]>([]);
+  const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   const { chats, updateChats } = useContext(ChatsContext);
 
   const { chatId } = useParams();
@@ -142,27 +143,56 @@ const ChatPage = () => {
       await updateTitle(chatId, chats[chatIndex].title);
   }, [chatId, chatIndex, chats]);
 
+  const openSideBar = useCallback(() => {
+    setIsSideBarOpen(true);
+  }, []);
+
+  const closeSideBar = useCallback(() => {
+    setIsSideBarOpen(false);
+  }, []);
+
   return (
     <div className="w-full h-full text-sm flex">
-      <ChatSideBar chats={chats} />
-      <main className="container mx-auto pt-3 h-full flex flex-col items-center gap-4 bg-secondary/50">
-        {chats.length && chatIndex > -1 ? (
-          <div className="self-start ml-5">
-            <input
-              type="text"
-              value={chats[chatIndex].title}
-              onChange={(e) => handleTitleChange(e.target.value)}
-              onBlur={() => updateChatTitle()}
-              onKeyDown={(e) => (e.key === "Enter" ? updateChatTitle() : "")}
-              className="border-border ring-offset-primary placeholder:text-muted-foreground focus:none flex h-10 w-full text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md border bg-primary px-4 py-2"
+      <ChatSideBar
+        chats={chats}
+        isOpen={isSideBarOpen}
+        closeSideBar={closeSideBar}
+      />
+      <main className="relative container mx-auto pt-3 w-full h-full flex flex-col items-center gap-4 bg-secondary/50">
+        <div className="w-full px-5 flex items-center justify-between gap-4">
+          <div
+            className="lg:hidden top-5 left-5 cursor-pointer"
+            onClick={openSideBar}
+          >
+            <Image
+              src="/icons/hamburger-icon.svg"
+              alt="menu icon"
+              width={20}
+              height={20}
             />
           </div>
-        ) : (
-          ""
-        )}
+
+          {chats.length && chatIndex > -1 ? (
+            <div className="w-full">
+              <input
+                type="text"
+                value={chats[chatIndex].title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                onBlur={() => updateChatTitle()}
+                onKeyDown={(e) => (e.key === "Enter" ? updateChatTitle() : "")}
+                className="w-full sm:w-1/2 max-w-[360px] mx-auto border-border ring-offset-primary placeholder:text-muted-foreground focus:none flex h-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md border bg-primary px-4 py-2"
+              />
+            </div>
+          ) : (
+            ""
+          )}
+        </div>
         <div className="w-8/12 h-full pt-5 overflow-y-scroll no-scrollbar text-xs">
           {messages.map(({ owner, message }, index) => (
-            <div key={index} className="shrink-0 flex items-start gap-4 mb-6">
+            <div
+              key={index}
+              className="shrink-0 flex items-start gap-2 sm:gap-4 mb-6"
+            >
               <div className="shrink-0 p-2 rounded-full bg-action">
                 <Image
                   src={`/icons/${owner}-icon.svg`}
